@@ -1,45 +1,51 @@
 {
-  "name": "typescript-action",
+  "name": "action-forward-merge-pr",
   "version": "0.0.0",
-  "private": true,
-  "description": "TypeScript template action",
-  "main": "lib/main.js",
+  "description": "Create a forward-merge pull request to keep support branches in sync",
   "scripts": {
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
     "package": "ncc build --source-map",
+    "bundle": "rollup -c",
     "test": "jest",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/NicholasBoll/action-forward-merge-pr.git"
   },
   "keywords": [
-    "actions",
-    "node",
-    "setup"
+    "forward",
+    "merge",
+    "pull",
+    "request"
   ],
-  "author": "",
+  "author": "Nicholas Boll",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.4"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.7",
-    "@types/node": "^14.0.25",
-    "@typescript-eslint/parser": "^3.7.0",
+    "@actions/github": "^4.0.0",
+    "@types/jest": "^26.0.9",
+    "@types/node": "^14.0.27",
+    "@typescript-eslint/parser": "^3.8.0",
     "@zeit/ncc": "^0.22.3",
-    "eslint": "^7.5.0",
+    "eslint": "^7.6.0",
     "eslint-plugin-github": "^4.1.1",
-    "eslint-plugin-jest": "^23.18.0",
-    "jest": "^24.9.0",
-    "jest-circus": "^26.1.0",
+    "eslint-plugin-jest": "^23.20.0",
+    "graphql": "^15.3.0",
+    "jest": "^26.2.2",
+    "jest-circus": "^26.2.2",
     "js-yaml": "^3.14.0",
     "prettier": "2.0.5",
-    "ts-jest": "^24.3.0",
+    "rollup": "^2.23.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "ts-graphql-plugin": "^1.12.0",
+    "ts-jest": "^26.1.4",
     "typescript": "^3.9.7"
   }
 }

@@ -1,13 +1,18 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as github from '@actions/github'
+import {getQueries} from './queries'
+
+// const queries = getQueries({
+//   token: process.env.GITHUB_TOKEN_COM!,
+//   owner: 'NicholasBoll',
+//   repo: 'test-github-actions'
+// })
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    const token: string = core.getInput('token')
+    const {owner, repo} = github.context.repo
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
     core.debug(new Date().toTimeString())
 
     core.setOutput('time', new Date().toTimeString())

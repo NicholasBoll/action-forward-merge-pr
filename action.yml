@@ -1,11 +1,16 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Forward-merge Pull Requests'
+description: 'Create a pull requests when merge-forward branches are updated. This is useful when you need multiple support branches and need to keep everything up-to-date. It will not resolve merge conflicts.'
+author: 'Nicholas Boll'
+branding:
+  icon: 'git-merge'
+  color: 'orange'
 inputs:
-  milliseconds: # change this
+  branches:
+    description: 'Comma-separated list of branches with a plus sign for a branch that that will be merged into the other branch: "support/v3+support/v4,support/v4+main" will ensure "support/v3" is merged into "support/v4".'
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  token:
+    description: 'Github API Token - must be a write token allowing access to the repo'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
