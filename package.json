@@ -12,6 +12,7 @@
     "test": "jest",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
   },
+  "main": "dist/main.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NicholasBoll/action-forward-merge-pr.git"
