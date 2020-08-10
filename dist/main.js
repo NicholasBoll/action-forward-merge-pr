@@ -5624,8 +5624,9 @@ const github$1 = __importStar(github);
 async function run() {
     try {
         const token = core$1.getInput('token');
+        const branches = core$1.getInput('branches', { required: true });
         const { owner, repo } = github$1.context.repo;
-        core$1.debug(new Date().toTimeString());
+        core$1.debug(branches);
         core$1.setOutput('time', new Date().toTimeString());
     }
     catch (error) {

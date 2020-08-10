@@ -11,9 +11,10 @@ import {getQueries} from './queries'
 async function run(): Promise<void> {
   try {
     const token: string = core.getInput('token')
+    const branches: string = core.getInput('branches', {required: true})
     const {owner, repo} = github.context.repo
 
-    core.debug(new Date().toTimeString())
+    core.debug(branches)
 
     core.setOutput('time', new Date().toTimeString())
   } catch (error) {
