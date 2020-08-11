@@ -22,6 +22,10 @@ This action will not resolve any merge conflicts. The GitHub UI will prompt you 
 
 This action uses `git`'s comparison tool which uses commit ranges base on commit hashes. Use the `merge` strategy when merging this pull request. Using `squash` or `rebase` will rewrite commit hashes and will still show commits when the branches are later compared an will cause this action to create a new pull request with the same commits in the range after merging.
 
+This will create a pull request that looks like:
+
+![Pull Request Screenshot](./pull_request.png)
+
 ## Inputs
 
 > `token`
