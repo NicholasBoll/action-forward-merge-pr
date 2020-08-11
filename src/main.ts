@@ -18,7 +18,7 @@ async function run(): Promise<void> {
       currentBranch: github.context.ref.replace('refs/heads/', '')
     })
 
-    repository.createMergePullRequests({branches, body})
+    await repository.createMergePullRequests({branches, body})
   } catch (error) {
     core.setFailed(error.message)
   }

@@ -12,11 +12,15 @@ Use this action to help keep support branches in sync with upstream branches. Yo
 
 Where each `+` is a pull request commit and each `\` is a forward-merge into another branch. This strategy makes sure that a commit in `support/v3` will be forward-merged into `main` and all commits in `main` will be forward merged into `prerelease/v5`.
 
-In the first `support/v3` commit, a branch named `merge/support/v3-into-main` will be created and a pull request into `main` will be created. The pull request will request a review from everyone listed as an author in the commit range.
+In the first `support/v3` commit, a branch named `merge/support/v3-into-main` will be created and a pull request into `main` will be created. The pull request will request a review from everyone listed as an author in the commit range (assuming the provided token has access to add reviewers).
 
-It is best to use this action on `push`. It will not create another pull request if a `merge` pull request is already open. You will have to merge or close the pull request created by this action and delete the branch for another to be created.
+It is best to use this action on `push`. It will not create another pull request if a `merge` pull request is already open. You will have to merge or close the pull request created by this action and delete the branch for another to be created. It is possible for additional changes to happen to branches before the merge pull request is merged. The script will not create another merge pull request branch. To combat this, you can either do a cron workflow or set up a manual workflow trigger.
 
 This action uses the Github API rather than `git` commands. This means the provided `token` will decrease the hourly limit of API calls. The exact amount of calls varies depending on the event type. For a `push`, it will use a total of 6 if there is no existing merge pull request currently opened.
+
+This action will not resolve any merge conflicts. The GitHub UI will prompt you for how to resolve merge conflicts. Some may be resolved using the GitHub interface while others will require the command line.
+
+This action uses `git`'s comparison tool which uses commit ranges base on commit hashes. Use the `merge` strategy when merging this pull request. Using `squash` or `rebase` will rewrite commit hashes and will still show commits when the branches are later compared an will cause this action to create a new pull request with the same commits in the range after merging.
 
 ## Inputs
 
@@ -37,6 +41,11 @@ on:
     branches: # List all "from" branches - all branches that should be forward merged
       - support/*
       - main
+  # Allow manual triggering: This requires you to choose a `ref`. This should be the branch with changes
+  workflow_dispatch:
+  # run 0:00 UTC every day
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   forward-merge:
