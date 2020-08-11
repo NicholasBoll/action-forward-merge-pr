@@ -5688,6 +5688,9 @@ info = console.info }) {
                 .split(',')
                 .map(b => b.split('+'))
                 .filter(b => (currentBranch ? currentBranch === b[0] : true));
+            if (branchesToProcess.length === 0) {
+                info(`Current branch does not match any base branches. Skipping.`);
+            }
             const branchesToCreate = await Promise.all(branchesToProcess.map(async ([from, to]) => {
                 info(`Processing branches from: ${from}, to: ${to}`);
                 const commits = await repository.getCommits({ head: from, base: to });
