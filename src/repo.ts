@@ -210,9 +210,7 @@ export function getRepo({
           return await Promise.all(
             pullRequests.map(pr => {
               const logins = pr.commits.map(c => c.author.login)
-              info(
-                `Adding '${logins.join(', ')}' as reviewer(s) to pull request`
-              )
+              info(`Adding reviewers to pull request: '${logins.join(', ')}'`)
 
               return repository.addReviewers({
                 number: pr.number,
