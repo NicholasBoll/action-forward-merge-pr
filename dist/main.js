@@ -5749,7 +5749,7 @@ info = console.info }) {
                             logins
                         });
                     })).catch(err => {
-                        throw new Error(`Could not add reviewers.\nOriginal message: ${err.message}`);
+                        info(`Could not add reviewers.\nOriginal message: ${err.message}\nTo add reviewers, update the token to a bot that has access to add reviewers.`);
                     });
                 });
             }
