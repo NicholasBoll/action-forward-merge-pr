@@ -209,7 +209,7 @@ export function getRepo({
         ).then(async pullRequests => {
           return await Promise.all(
             pullRequests.map(pr => {
-              const logins = pr.commits.map(c => c.author.login)
+              const logins = [...new Set(pr.commits.map(c => c.author.login))] // unique logins
               info(`Adding reviewers to pull request: '${logins.join(', ')}'`)
 
               return repository.addReviewers({
