@@ -9,7 +9,8 @@ async function run(): Promise<void> {
     const body = core.getInput('body') || ''
 
     const {owner, repo} = github.context.repo
-    core.debug(JSON.stringify(github.context))
+    core.debug(github.context.sha)
+    core.debug(github.context.ref)
     // github.context.
 
     const repository = getRepo({
