@@ -5769,10 +5769,14 @@ async function run() {
         const branches = core$1.getInput('branches', { required: true });
         const body = core$1.getInput('body') || '';
         const { owner, repo: repo$1 } = github$1.context.repo;
+        core$1.debug(JSON.stringify(github$1.context));
+        // github.context.
         const repository = repo.getRepo({
             token,
             owner,
-            repo: repo$1
+            repo: repo$1,
+            debug: core$1.debug
+            // currentBranch
         });
         repository.createMergePullRequests({ branches, body });
     }

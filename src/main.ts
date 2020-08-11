@@ -9,11 +9,15 @@ async function run(): Promise<void> {
     const body = core.getInput('body') || ''
 
     const {owner, repo} = github.context.repo
+    core.debug(JSON.stringify(github.context))
+    // github.context.
 
     const repository = getRepo({
       token,
       owner,
-      repo
+      repo,
+      debug: core.debug
+      // currentBranch
     })
 
     repository.createMergePullRequests({branches, body})
