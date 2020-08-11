@@ -5609,7 +5609,7 @@ async function wait(milliseconds) {
 exports.wait = wait;
 function getRepo({ token, owner, repo, currentBranch, 
 // eslint-disable-next-line no-console
-debug = console.debug }) {
+info = console.info }) {
     const octokit = github.getOctokit(token);
     const repository = {
         getMergeBranchName({ to, from }) {
@@ -5641,16 +5641,16 @@ debug = console.debug }) {
         },
         async createPullRequest({ from, name, to, body }) {
             const sha = (await octokit.git.getRef({ repo, owner, ref: `heads/${from}` })).data.object.sha;
-            debug(`Sha for ${from}: ${sha}`);
-            debug(`Creating branch '${name}'`);
+            info(`Sha for ${from}: ${sha}`);
+            info(`Creating branch '${name}'`);
             await octokit.git.createRef({
                 repo,
                 owner,
                 ref: `refs/heads/${name}`,
                 sha
             });
-            debug(`Branch '${name}' created`);
-            debug(`Creating pull request`);
+            info(`Branch '${name}' created`);
+            info(`Creating pull request`);
             const result = await octokit.pulls.create({
                 repo,
                 owner,
@@ -5663,7 +5663,7 @@ debug = console.debug }) {
         },
         async addReviewers(number, logins) {
             const login = (await octokit.users.getAuthenticated()).data.login;
-            debug(`Requesting reviews from: ${logins.join(', ')}. Self login: ${login}`);
+            info(`Requesting reviews from: ${logins.join(', ')}. Self login: ${login}`);
             const reviewers = logins.filter(l => l !== login);
             if (reviewers.length) {
                 return await octokit.pulls.requestReviewers({
@@ -5674,7 +5674,7 @@ debug = console.debug }) {
                 });
             }
             else {
-                debug(`No one to request a review from. Skipping.`);
+                info(`No one to request a review from. Skipping.`);
             }
             return;
         },
@@ -5683,12 +5683,13 @@ debug = console.debug }) {
             if (!match.test(branches)) {
                 throw Error('Branches must match the pattern "branch1+branch2" or "branch1+branch2,branch2+branch3');
             }
+            info(`Current branch: ${currentBranch}`);
             const branchesToProcess = branches
                 .split(',')
                 .map(b => b.split('+'))
                 .filter(b => (currentBranch ? currentBranch === b[0] : true));
             const branchesToCreate = await Promise.all(branchesToProcess.map(async ([from, to]) => {
-                debug(`Processing branches from: ${from}, to: ${to}`);
+                info(`Processing branches from: ${from}, to: ${to}`);
                 const commits = await repository.getCommits({ head: from, base: to });
                 return {
                     from,
@@ -5705,7 +5706,7 @@ debug = console.debug }) {
                     .filter(c => c.commits.length > 0)
                     .map(async (comparison) => {
                     const branchExists = !!(await repository.checkIfBranchExists(comparison.mergeName));
-                    debug(`Comparing ${comparison.from}...${comparison.to}. Commit count: ${comparison.commits.length}. Branch exists: ${branchExists}.${branchExists ? ' Skipping' : ''}`);
+                    info(`Comparing ${comparison.from}...${comparison.to}. Commit count: ${comparison.commits.length}. Branch exists: ${branchExists}.${branchExists ? ' Skipping' : ''}`);
                     return {
                         branchExists,
                         ...comparison
@@ -5716,7 +5717,7 @@ debug = console.debug }) {
                 return comparisons.filter(c => !c.branchExists);
             });
             if (branchesToCreate.length) {
-                debug(`branchesToCreate: ${branchesToCreate
+                info(`branchesToCreate: ${branchesToCreate
                     .map(c => c.mergeName)
                     .join(', ')}`);
                 await Promise.all(branchesToCreate.map(c => {
@@ -5769,14 +5770,12 @@ async function run() {
         const branches = core$1.getInput('branches', { required: true });
         const body = core$1.getInput('body') || '';
         const { owner, repo: repo$1 } = github$1.context.repo;
-        core$1.info(`sha: ${github$1.context.sha}`);
-        core$1.info(`ref: ${github$1.context.ref}`);
         const repository = repo.getRepo({
             token,
             owner,
             repo: repo$1,
-            debug: core$1.debug
-            // currentBranch
+            info: core$1.info,
+            currentBranch: github$1.context.ref.replace('refs/heads/', '')
         });
         repository.createMergePullRequests({ branches, body });
     }

@@ -18,13 +18,13 @@ export function getRepo({
   repo,
   currentBranch,
   // eslint-disable-next-line no-console
-  debug = console.debug
+  info = console.info
 }: {
   token: string
   owner: string
   repo: string
   currentBranch?: string
-  debug?: Function
+  info?: Function
 }) {
   const octokit = getOctokit(token)
 
@@ -74,9 +74,9 @@ export function getRepo({
       const sha = (
         await octokit.git.getRef({repo, owner, ref: `heads/${from}`})
       ).data.object.sha
-      debug(`Sha for ${from}: ${sha}`)
+      info(`Sha for ${from}: ${sha}`)
 
-      debug(`Creating branch '${name}'`)
+      info(`Creating branch '${name}'`)
       await octokit.git.createRef({
         repo,
         owner,
@@ -84,9 +84,9 @@ export function getRepo({
         sha
       })
 
-      debug(`Branch '${name}' created`)
+      info(`Branch '${name}' created`)
 
-      debug(`Creating pull request`)
+      info(`Creating pull request`)
       const result = await octokit.pulls.create({
         repo,
         owner,
@@ -102,7 +102,7 @@ export function getRepo({
     async addReviewers(number: number, logins: string[]) {
       const login = (await octokit.users.getAuthenticated()).data.login
 
-      debug(
+      info(
         `Requesting reviews from: ${logins.join(', ')}. Self login: ${login}`
       )
       const reviewers = logins.filter(l => l !== login)
@@ -114,7 +114,7 @@ export function getRepo({
           reviewers
         })
       } else {
-        debug(`No one to request a review from. Skipping.`)
+        info(`No one to request a review from. Skipping.`)
       }
       return
     },
@@ -133,6 +133,8 @@ export function getRepo({
         )
       }
 
+      info(`Current branch: ${currentBranch}`)
+
       const branchesToProcess = branches
         .split(',')
         .map(b => b.split('+'))
@@ -140,7 +142,7 @@ export function getRepo({
 
       const branchesToCreate = await Promise.all(
         branchesToProcess.map(async ([from, to]) => {
-          debug(`Processing branches from: ${from}, to: ${to}`)
+          info(`Processing branches from: ${from}, to: ${to}`)
           const commits = await repository.getCommits({head: from, base: to})
           return {
             from,
@@ -161,7 +163,7 @@ export function getRepo({
                 const branchExists = !!(await repository.checkIfBranchExists(
                   comparison.mergeName
                 ))
-                debug(
+                info(
                   `Comparing ${comparison.from}...${
                     comparison.to
                   }. Commit count: ${
@@ -182,7 +184,7 @@ export function getRepo({
         })
 
       if (branchesToCreate.length) {
-        debug(
+        info(
           `branchesToCreate: ${branchesToCreate
             .map(c => c.mergeName)
             .join(', ')}`
