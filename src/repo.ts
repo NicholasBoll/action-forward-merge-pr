@@ -99,7 +99,7 @@ export function getRepo({
       return result.data.number
     },
 
-    async addReviewers(number: number, logins: string[]) {
+    async addReviewers({number, logins}: {number: number; logins: string[]}) {
       const login = (await octokit.users.getAuthenticated()).data.login
 
       info(
@@ -194,16 +194,28 @@ export function getRepo({
             .join(', ')}`
         )
 
-        await Promise.all(
-          branchesToCreate.map(c => {
-            return repository.createPullRequest({
-              from: c.from,
-              name: c.mergeName,
-              to: c.to,
-              body
-            })
+        return await Promise.all(
+          branchesToCreate.map(async c => {
+            return {
+              commits: c.commits,
+              number: await repository.createPullRequest({
+                from: c.from,
+                name: c.mergeName,
+                to: c.to,
+                body
+              })
+            }
           })
-        )
+        ).then(async pullRequests => {
+          return await Promise.all(
+            pullRequests.map(pr =>
+              repository.addReviewers({
+                number: pr.number,
+                logins: pr.commits.map(c => c.author.login)
+              })
+            )
+          )
+        })
       }
     }
   }
