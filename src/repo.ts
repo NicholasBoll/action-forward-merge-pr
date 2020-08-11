@@ -86,17 +86,21 @@ export function getRepo({
 
       info(`Branch '${name}' created`)
 
-      info(`Creating pull request`)
+      const title = `Merge ${from} into ${to}`
+      info(`Creating pull request: ${title}`)
+
       const result = await octokit.pulls.create({
         repo,
         owner,
-        title: `Merge ${from} into ${to}`,
+        title,
         head: name,
         base: to,
         body
       })
 
-      return result.data.number
+      const number = result.data.number
+      info(`Created pull request: #${number}`)
+      return number
     },
 
     async addReviewers({number, logins}: {number: number; logins: string[]}) {
@@ -162,7 +166,15 @@ export function getRepo({
         .then(async comparisons => {
           return Promise.all(
             comparisons
-              .filter(c => c.commits.length > 0)
+              .filter(c => {
+                const count = c.commits.length
+                info(
+                  `Comparing ${c.from}...${c.to}. Commit count: ${count}.${
+                    count === 0 ? ' Skipping.' : ''
+                  }`
+                )
+                return count > 0
+              })
               .map(async comparison => {
                 const branchExists = !!(await repository.checkIfBranchExists(
                   comparison.mergeName
@@ -170,10 +182,8 @@ export function getRepo({
                 info(
                   `Comparing ${comparison.from}...${
                     comparison.to
-                  }. Commit count: ${
-                    comparison.commits.length
                   }. Branch exists: ${branchExists}.${
-                    branchExists ? ' Skipping' : ''
+                    branchExists ? ' Skipping.' : ''
                   }`
                 )
                 return {
@@ -217,7 +227,11 @@ export function getRepo({
                 logins
               })
             })
-          )
+          ).catch(err => {
+            throw new Error(
+              `Could not add reviewers.\nOriginal message: ${err.message}`
+            )
+          })
         })
       }
     }

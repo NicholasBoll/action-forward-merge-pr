@@ -1,6 +1,6 @@
 {
   "name": "action-forward-merge-pr",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Create a forward-merge pull request to keep support branches in sync",
   "scripts": {
     "build": "npm run build:typescript && npm run build:queries",

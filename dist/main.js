@@ -5650,16 +5650,19 @@ info = console.info }) {
                 sha
             });
             info(`Branch '${name}' created`);
-            info(`Creating pull request`);
+            const title = `Merge ${from} into ${to}`;
+            info(`Creating pull request: ${title}`);
             const result = await octokit.pulls.create({
                 repo,
                 owner,
-                title: `Merge ${from} into ${to}`,
+                title,
                 head: name,
                 base: to,
                 body
             });
-            return result.data.number;
+            const number = result.data.number;
+            info(`Created pull request: #${number}`);
+            return number;
         },
         async addReviewers({ number, logins }) {
             const login = (await octokit.users.getAuthenticated()).data.login;
@@ -5706,10 +5709,14 @@ info = console.info }) {
             }))
                 .then(async (comparisons) => {
                 return Promise.all(comparisons
-                    .filter(c => c.commits.length > 0)
+                    .filter(c => {
+                    const count = c.commits.length;
+                    info(`Comparing ${c.from}...${c.to}. Commit count: ${count}.${count === 0 ? ' Skipping.' : ''}`);
+                    return count > 0;
+                })
                     .map(async (comparison) => {
                     const branchExists = !!(await repository.checkIfBranchExists(comparison.mergeName));
-                    info(`Comparing ${comparison.from}...${comparison.to}. Commit count: ${comparison.commits.length}. Branch exists: ${branchExists}.${branchExists ? ' Skipping' : ''}`);
+                    info(`Comparing ${comparison.from}...${comparison.to}. Branch exists: ${branchExists}.${branchExists ? ' Skipping.' : ''}`);
                     return {
                         branchExists,
                         ...comparison
@@ -5741,7 +5748,9 @@ info = console.info }) {
                             number: pr.number,
                             logins
                         });
-                    }));
+                    })).catch(err => {
+                        throw new Error(`Could not add reviewers.\nOriginal message: ${err.message}`);
+                    });
                 });
             }
         }
@@ -5792,7 +5801,7 @@ async function run() {
             info: core$1.info,
             currentBranch: github$1.context.ref.replace('refs/heads/', '')
         });
-        repository.createMergePullRequests({ branches, body });
+        await repository.createMergePullRequests({ branches, body });
     }
     catch (error) {
         core$1.setFailed(error.message);
