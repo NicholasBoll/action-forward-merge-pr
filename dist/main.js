@@ -5734,10 +5734,14 @@ info = console.info }) {
                         })
                     };
                 })).then(async (pullRequests) => {
-                    return await Promise.all(pullRequests.map(pr => repository.addReviewers({
-                        number: pr.number,
-                        logins: pr.commits.map(c => c.author.login)
-                    })));
+                    return await Promise.all(pullRequests.map(pr => {
+                        const logins = pr.commits.map(c => c.author.login);
+                        info(`Adding '${logins.join(', ')}' as reviewer(s) to pull request`);
+                        return repository.addReviewers({
+                            number: pr.number,
+                            logins
+                        });
+                    }));
                 });
             }
         }
