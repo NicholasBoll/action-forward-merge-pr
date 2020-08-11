@@ -11,6 +11,9 @@ inputs:
   token:
     description: 'Github API Token - must be a write token allowing access to the repo'
     required: false
+  body:
+    description: 'Body message of the pull request. It is not required'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/main.js'

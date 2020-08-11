@@ -1,10 +1,10 @@
-import {wait, getQueries} from '../src/queries'
+import {wait, getRepo} from '../src/repo'
 import * as process from 'process'
 
-const queries = getQueries({
+const repository = getRepo({
   token: process.env.GITHUB_TOKEN_COM!,
   owner: 'NicholasBoll',
-  repo: 'test-github-actions'
+  repo: 'action-forward-merge-pr'
 })
 
 test('throws invalid number', async () => {
@@ -20,10 +20,23 @@ test('wait 500 ms', async () => {
   expect(delta).toBeGreaterThan(450)
 })
 
-test('octokit', async () => {
-  // const result = await queries.getCommitCount({
-  //   base: 'support/v4',
-  //   head: 'support/v3'
-  // })
-  // console.log(result)
+// skip these side-effect tests. Manually enable to test things out.
+test.skip('getCommits', async () => {
+  const result = await repository.getCommits({
+    base: 'support/v4',
+    head: 'support/v3'
+  })
+  console.log(result)
+})
+
+test.skip('compareBranches', async () => {
+  await repository.createMergePullRequests({
+    branches: 'support/v3+support/v4,support/v4+main',
+    body: ''
+  })
+})
+
+test.skip('checkIfBranchExists', async () => {
+  const result = await repository.checkIfBranchExists('support/v3')
+  console.log(result)
 })

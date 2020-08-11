@@ -5593,6 +5593,152 @@ unwrapExports(github);
 var github_1 = github.getOctokit;
 var github_2 = github.context;
 
+var repo = createCommonjsModule(function (module, exports) {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getRepo = exports.wait = void 0;
+
+const gql = (strings) => strings.raw[0];
+async function wait(milliseconds) {
+    return new Promise(resolve => {
+        if (isNaN(milliseconds)) {
+            throw new Error('milliseconds not a number');
+        }
+        setTimeout(() => resolve('done!'), milliseconds);
+    });
+}
+exports.wait = wait;
+function getRepo({ token, owner, repo, currentBranch, 
+// eslint-disable-next-line no-console
+debug = console.debug }) {
+    const octokit = github.getOctokit(token);
+    const repository = {
+        getMergeBranchName({ to, from }) {
+            return `merge/${from}-into-${to}`;
+        },
+        async getCommits({ base, head }) {
+            return octokit.repos
+                .compareCommits({
+                owner,
+                repo,
+                base,
+                head
+            })
+                .then(r => r.data.commits);
+        },
+        async checkIfBranchExists(name) {
+            const query = gql `
+        query BranchQuery($name: String!, $owner: String!, $repo: String!) {
+          repository(owner: $owner, name: $repo) {
+            ref(qualifiedName: $name) {
+              name
+            }
+          }
+        }
+      `;
+            return octokit
+                .graphql(query, { name, owner, repo })
+                .then(result => { var _a, _b; return ((_b = (_a = result.repository) === null || _a === void 0 ? void 0 : _a.ref) === null || _b === void 0 ? void 0 : _b.name) || null; });
+        },
+        async createPullRequest({ from, name, to, body }) {
+            const sha = (await octokit.git.getRef({ repo, owner, ref: `heads/${from}` })).data.object.sha;
+            debug(`Sha for ${from}: ${sha}`);
+            debug(`Creating branch '${name}'`);
+            await octokit.git.createRef({
+                repo,
+                owner,
+                ref: `refs/heads/${name}`,
+                sha
+            });
+            debug(`Branch '${name}' created`);
+            debug(`Creating pull request`);
+            const result = await octokit.pulls.create({
+                repo,
+                owner,
+                title: `Merge ${from} into ${to}`,
+                head: name,
+                base: to,
+                body
+            });
+            return result.data.number;
+        },
+        async addReviewers(number, logins) {
+            const login = (await octokit.users.getAuthenticated()).data.login;
+            debug(`Requesting reviews from: ${logins.join(', ')}. Self login: ${login}`);
+            const reviewers = logins.filter(l => l !== login);
+            if (reviewers.length) {
+                return await octokit.pulls.requestReviewers({
+                    repo,
+                    owner,
+                    pull_number: number,
+                    reviewers
+                });
+            }
+            else {
+                debug(`No one to request a review from. Skipping.`);
+            }
+            return;
+        },
+        async createMergePullRequests({ branches, body }) {
+            const match = /([^+,]+\+[^,]+)(,([^+,]+\+[^,]+))*/;
+            if (!match.test(branches)) {
+                throw Error('Branches must match the pattern "branch1+branch2" or "branch1+branch2,branch2+branch3');
+            }
+            const branchesToProcess = branches
+                .split(',')
+                .map(b => b.split('+'))
+                .filter(b => (currentBranch ? currentBranch === b[0] : true));
+            const branchesToCreate = await Promise.all(branchesToProcess.map(async ([from, to]) => {
+                debug(`Processing branches from: ${from}, to: ${to}`);
+                const commits = await repository.getCommits({ head: from, base: to });
+                return {
+                    from,
+                    to,
+                    mergeName: repository.getMergeBranchName({
+                        to,
+                        from
+                    }),
+                    commits
+                };
+            }))
+                .then(async (comparisons) => {
+                return Promise.all(comparisons
+                    .filter(c => c.commits.length > 0)
+                    .map(async (comparison) => {
+                    const branchExists = !!(await repository.checkIfBranchExists(comparison.mergeName));
+                    debug(`Comparing ${comparison.from}...${comparison.to}. Commit count: ${comparison.commits.length}. Branch exists: ${branchExists}.${branchExists ? ' Skipping' : ''}`);
+                    return {
+                        branchExists,
+                        ...comparison
+                    };
+                }));
+            })
+                .then(comparisons => {
+                return comparisons.filter(c => !c.branchExists);
+            });
+            if (branchesToCreate.length) {
+                debug(`branchesToCreate: ${branchesToCreate
+                    .map(c => c.mergeName)
+                    .join(', ')}`);
+                await Promise.all(branchesToCreate.map(c => {
+                    return repository.createPullRequest({
+                        from: c.from,
+                        name: c.mergeName,
+                        to: c.to,
+                        body
+                    });
+                }));
+            }
+        }
+    };
+    return repository;
+}
+exports.getRepo = getRepo;
+});
+
+unwrapExports(repo);
+var repo_1 = repo.getRepo;
+var repo_2 = repo.wait;
+
 var main = createCommonjsModule(function (module, exports) {
 var __createBinding = (commonjsGlobal && commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -5616,18 +5762,19 @@ var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (
 Object.defineProperty(exports, "__esModule", { value: true });
 const core$1 = __importStar(core);
 const github$1 = __importStar(github);
-// const queries = getQueries({
-//   token: process.env.GITHUB_TOKEN_COM!,
-//   owner: 'NicholasBoll',
-//   repo: 'test-github-actions'
-// })
+
 async function run() {
     try {
         const token = core$1.getInput('token');
         const branches = core$1.getInput('branches', { required: true });
-        const { owner, repo } = github$1.context.repo;
-        core$1.debug(branches);
-        core$1.setOutput('time', new Date().toTimeString());
+        const body = core$1.getInput('body') || '';
+        const { owner, repo: repo$1 } = github$1.context.repo;
+        const repository = repo.getRepo({
+            token,
+            owner,
+            repo: repo$1
+        });
+        repository.createMergePullRequests({ branches, body });
     }
     catch (error) {
         core$1.setFailed(error.message);

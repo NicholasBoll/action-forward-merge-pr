@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "description": "Create a forward-merge pull request to keep support branches in sync",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:typescript && npm run build:queries",
+    "build:typescript": "tsc",
+    "build:queries": "ts-graphql-plugin typegen",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
