@@ -16,7 +16,7 @@ export function getRepo({
   token,
   owner,
   repo,
-  currentBranch,
+  currentBranch = '',
   // eslint-disable-next-line no-console
   info = console.info
 }: {

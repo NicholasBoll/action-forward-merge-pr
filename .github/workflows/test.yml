@@ -13,4 +13,4 @@ jobs:
       - uses: ./
         with:
           token: ${{secrets.GITHUB_TOKEN}}
-          branches: support/v3+support/v4,support/v4+main
+          branches: support/v3+main,main+prerelease/v5
