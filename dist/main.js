@@ -5607,7 +5607,7 @@ async function wait(milliseconds) {
     });
 }
 exports.wait = wait;
-function getRepo({ token, owner, repo, currentBranch, 
+function getRepo({ token, owner, repo, currentBranch = '', 
 // eslint-disable-next-line no-console
 info = console.info }) {
     const octokit = github.getOctokit(token);
@@ -5661,7 +5661,7 @@ info = console.info }) {
             });
             return result.data.number;
         },
-        async addReviewers(number, logins) {
+        async addReviewers({ number, logins }) {
             const login = (await octokit.users.getAuthenticated()).data.login;
             info(`Requesting reviews from: ${logins.join(', ')}. Self login: ${login}`);
             const reviewers = logins.filter(l => l !== login);
@@ -5723,14 +5723,26 @@ info = console.info }) {
                 info(`branchesToCreate: ${branchesToCreate
                     .map(c => c.mergeName)
                     .join(', ')}`);
-                await Promise.all(branchesToCreate.map(c => {
-                    return repository.createPullRequest({
-                        from: c.from,
-                        name: c.mergeName,
-                        to: c.to,
-                        body
-                    });
-                }));
+                return await Promise.all(branchesToCreate.map(async (c) => {
+                    return {
+                        commits: c.commits,
+                        number: await repository.createPullRequest({
+                            from: c.from,
+                            name: c.mergeName,
+                            to: c.to,
+                            body
+                        })
+                    };
+                })).then(async (pullRequests) => {
+                    return await Promise.all(pullRequests.map(pr => {
+                        const logins = [...new Set(pr.commits.map(c => c.author.login))]; // unique logins
+                        info(`Adding reviewers to pull request: '${logins.join(', ')}'`);
+                        return repository.addReviewers({
+                            number: pr.number,
+                            logins
+                        });
+                    }));
+                });
             }
         }
     };

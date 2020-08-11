@@ -31,10 +31,10 @@ test.skip('getCommits', async () => {
 
 test.skip('compareBranches', async () => {
   await repository.createMergePullRequests({
-    branches: 'support/v3+support/v4,support/v4+main',
+    branches: 'support/v3+main,main+prerelease/v5',
     body: ''
   })
-})
+}, 30000)
 
 test.skip('checkIfBranchExists', async () => {
   const result = await repository.checkIfBranchExists('support/v3')

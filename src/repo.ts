@@ -16,7 +16,7 @@ export function getRepo({
   token,
   owner,
   repo,
-  currentBranch,
+  currentBranch = '',
   // eslint-disable-next-line no-console
   info = console.info
 }: {
@@ -208,12 +208,15 @@ export function getRepo({
           })
         ).then(async pullRequests => {
           return await Promise.all(
-            pullRequests.map(pr =>
-              repository.addReviewers({
+            pullRequests.map(pr => {
+              const logins = [...new Set(pr.commits.map(c => c.author.login))] // unique logins
+              info(`Adding reviewers to pull request: '${logins.join(', ')}'`)
+
+              return repository.addReviewers({
                 number: pr.number,
-                logins: pr.commits.map(c => c.author.login)
+                logins
               })
-            )
+            })
           )
         })
       }
