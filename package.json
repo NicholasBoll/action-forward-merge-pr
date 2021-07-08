@@ -44,7 +44,7 @@
     "jest-circus": "^26.6.3",
     "js-yaml": "^3.14.0",
     "prettier": "2.0.5",
-    "rollup": "^2.40.0",
+    "rollup": "^2.52.8",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "ts-graphql-plugin": "^1.12.0",
