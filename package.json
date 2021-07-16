@@ -28,7 +28,7 @@
   "author": "Nicholas Boll",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.2.6"
+    "@actions/core": "^1.4.0"
   },
   "devDependencies": {
     "@actions/github": "^4.0.0",
