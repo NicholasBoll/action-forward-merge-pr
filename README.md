@@ -55,7 +55,7 @@ jobs:
   forward-merge:
     runs-on: ubuntu-latest
     steps:
-      - uses: NicholasBoll/action-forward-merge-pr@1.0.0
+      - uses: NicholasBoll/action-forward-merge-pr@v1.0.0
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           branches: support/v3+main,main+prerelease/v5
