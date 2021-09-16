@@ -1,5 +1,5 @@
 name: 'Forward-merge Pull Requests'
-description: 'Create forward-merge pull requests to support multiple release branches.'
+description: 'Create a forward-merge pull request to keep multiple support branches in sync.'
 author: 'Nicholas Boll'
 branding:
   icon: 'git-merge'
