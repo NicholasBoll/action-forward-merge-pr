@@ -1,6 +1,8 @@
-import pico from 'picomatch'
-import {getOctokit} from '@actions/github'
+/* eslint-disable i18n-text/no-en */
 import {BranchQuery} from './__generated__/branch-query'
+import {getOctokit} from '@actions/github'
+import pico from 'picomatch'
+
 const gql = (strings: TemplateStringsArray): string => strings.raw[0]
 
 export async function wait(milliseconds: number): Promise<string> {
@@ -146,11 +148,8 @@ export function getRepo({
 
       const branchesToProcess = branches
         .split(',')
-        .map(b => {
-          const [ source, target ] = b.split('+')
-          return [ pico(source), target ]
-        })
-        .filter(([ source, target ]) => (currentBranch ? source(currentBranch) : true))
+        .map(b => b.split('+'))
+        .filter(([ source ]) => (currentBranch ? pico(source)(currentBranch) : true))
 
       if (branchesToProcess.length === 0) {
         info(`Current branch does not match any base branches. Skipping.`)
@@ -159,7 +158,10 @@ export function getRepo({
       const branchesToCreate = await Promise.all(
         branchesToProcess.map(async ([from, to]) => {
           info(`Processing branches from: ${from}, to: ${to}`)
-          const commits = await repository.getCommits({head: from, base: to})
+          const commits = await repository.getCommits({
+            "head": from,
+            base: to
+          })
           return {
             from,
             to,
