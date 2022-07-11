@@ -15,3 +15,7 @@ jobs:
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           branches: support/v3+main,main+prerelease/v5
+          body: |
+            Resolve any conflicts
+            
+            Testing multiline

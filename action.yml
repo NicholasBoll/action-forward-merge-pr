@@ -1,5 +1,5 @@
 name: 'Forward-merge Pull Requests'
-description: 'Create a pull requests when merge-forward branches are updated. This is useful when you need multiple support branches and need to keep everything up-to-date. It will not resolve merge conflicts.'
+description: 'Create a forward-merge pull request to keep multiple support branches in sync.'
 author: 'Nicholas Boll'
 branding:
   icon: 'git-merge'
@@ -14,6 +14,9 @@ inputs:
   body:
     description: 'Body message of the pull request. It is not required'
     required: false
+  prefix:
+    description: 'Optional prefix to the PR title. Useful if you use some type of semantic commit pull request title validator'
+    required: false
 runs:
   using: 'node12'
-  main: 'dist/main.js'
+  main: 'dist/index.js'

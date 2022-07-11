@@ -64,12 +64,14 @@ export function getRepo({
       from,
       name,
       to,
-      body
+      body,
+      prefix
     }: {
       from: string
       name: string
       to: string
       body: string
+      prefix: string
     }) {
       const sha = (
         await octokit.git.getRef({repo, owner, ref: `heads/${from}`})
@@ -86,7 +88,7 @@ export function getRepo({
 
       info(`Branch '${name}' created`)
 
-      const title = `Merge ${from} into ${to}`
+      const title = `${prefix}Merge ${from} into ${to}`
       info(`Creating pull request: ${title}`)
 
       const result = await octokit.pulls.create({
@@ -125,10 +127,12 @@ export function getRepo({
 
     async createMergePullRequests({
       branches,
-      body
+      body,
+      prefix
     }: {
       branches: string
       body: string
+      prefix: string
     }) {
       const match = /([^+,]+\+[^,]+)(,([^+,]+\+[^,]+))*/
       if (!match.test(branches)) {
@@ -212,14 +216,17 @@ export function getRepo({
                 from: c.from,
                 name: c.mergeName,
                 to: c.to,
-                body
+                body,
+                prefix
               })
             }
           })
         ).then(async pullRequests => {
           return await Promise.all(
             pullRequests.map(pr => {
-              const logins = [...new Set(pr.commits.map(c => c.author.login))] // unique logins
+              const logins = [
+                ...new Set(pr.commits.map(c => c.author?.login || ''))
+              ] // unique logins
               info(`Adding reviewers to pull request: '${logins.join(', ')}'`)
 
               return repository.addReviewers({

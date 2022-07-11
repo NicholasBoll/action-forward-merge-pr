@@ -22,6 +22,10 @@ This action will not resolve any merge conflicts. The GitHub UI will prompt you 
 
 This action uses `git`'s comparison tool which uses commit ranges base on commit hashes. Use the `merge` strategy when merging this pull request. Using `squash` or `rebase` will rewrite commit hashes and will still show commits when the branches are later compared an will cause this action to create a new pull request with the same commits in the range after merging.
 
+This will create a pull request that looks like:
+
+![Pull Request Screenshot](./pull_request.png)
+
 ## Inputs
 
 > `token`
@@ -31,6 +35,10 @@ This should most likely be `${{secrets.GITHUB_TOKEN}}`, but can be any token tha
 > `branches`
 
 A string of forward-merge branch combinations separated by a comma. Each branch pair is separated by a `+`. If you would like to keep a support branch named `main` in sync with `support/v3` where all commits to `support/v3` should also be in `main`, then you would have `support/v3+main`. If you would also like all commits to `main` to also be in `prerelease/v5`, then you'd add another like this: `support/v3+main,main+prerelease/v5`. The `on.push.branches` should include the left-side of the `+` to make sure the workflow file triggers on changes to those branches.
+
+> `prefix`
+
+An optional prefix to support PR title validation. By default, the PR title will be "Merge {FromBranch} into {ToBranch}". The `prefix` wil be added to the beginning of that string.
 
 ## Example
 
@@ -51,8 +59,9 @@ jobs:
   forward-merge:
     runs-on: ubuntu-latest
     steps:
-      - uses: NicholasBoll/action-forward-merge-pr@1.0.0
+      - uses: NicholasBoll/action-forward-merge-pr@v1.0.0
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           branches: support/v3+main,main+prerelease/v5
+          prefix: 'chore: '
 ```

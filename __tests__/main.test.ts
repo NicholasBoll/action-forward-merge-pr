@@ -32,7 +32,8 @@ test.skip('getCommits', async () => {
 test.skip('compareBranches', async () => {
   await repository.createMergePullRequests({
     branches: 'support/v3+main,main+prerelease/v5',
-    body: ''
+    body: '',
+    prefix: ''
   })
 }, 30000)
 
