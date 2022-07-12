@@ -1,4 +1,5 @@
 import {getOctokit} from '@actions/github'
+import pico from 'picomatch'
 import {BranchQuery} from './__generated__/branch-query'
 const gql = (strings: TemplateStringsArray): string => strings.raw[0]
 
@@ -146,7 +147,7 @@ export function getRepo({
       const branchesToProcess = branches
         .split(',')
         .map(b => b.split('+'))
-        .filter(b => (currentBranch ? currentBranch === b[0] : true))
+        .filter(b => (currentBranch ? pico(b[0])(currentBranch) : true))
 
       if (branchesToProcess.length === 0) {
         info(`Current branch does not match any base branches. Skipping.`)
